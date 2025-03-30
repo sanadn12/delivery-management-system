@@ -16,27 +16,8 @@ services:
     ports:
       - "6002:6002"
     environment:
-      - DB_HOST=postgres  # Use the name of the PostgreSQL service here
-      - DB_USER=postgres
-      - DB_PASSWORD=12102004
-      - DB_NAME=dms
-      - DB_PORT=5432
+      - DATABASE_URL=postgresql://postgres_0clu_user:wfgIIyZqkUlBWAgDm6AsRZZvdURQrh81@dpg-cvkl5aogjchc73ce2lvg-a/postgres_0clu
       - PORT=6002
-    depends_on:
-      - postgres  # Ensure the backend waits for PostgreSQL
-    networks:
-      - app-network
-
-  postgres:
-    image: postgres:latest
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 12102004
-      POSTGRES_DB: dms
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./backup.sql:/docker-entrypoint-initdb.d/backup.sql  # Mount the backup SQL file to this path
     networks:
       - app-network
 
