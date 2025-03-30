@@ -153,7 +153,7 @@ const Orders = () => {
   return (
     <div className="max-w-7xl mx-auto p-6 bg-gray-100 rounded-lg shadow-md">
       <h2 className="text-4xl font-bold text-center text-gray-800 mb-6">Orders Dashboard</h2>
-      <div className="flex gap-4 mb-4">
+      <div className="flex flex-col md:flex-row gap-4 mb-4">
         <select
           className="p-2 border rounded-md bg-white"
           value={statusFilter}
