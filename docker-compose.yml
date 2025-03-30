@@ -1,0 +1,45 @@
+version: "3.9"
+services:
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "6002:6002"
+    environment:
+      - DB_HOST=postgres  # Use the name of the PostgreSQL service here
+      - DB_USER=postgres
+      - DB_PASSWORD=12102004
+      - DB_NAME=dms
+      - DB_PORT=5432
+      - PORT=6002
+    depends_on:
+      - postgres  # Ensure the backend waits for PostgreSQL
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12102004
+      POSTGRES_DB: dms
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./backup.sql:/docker-entrypoint-initdb.d/backup.sql  # Mount the backup SQL file to this path
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
