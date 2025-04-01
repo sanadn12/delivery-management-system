@@ -42,6 +42,7 @@ export const getPartners = async (req: Request, res: Response): Promise<void> =>
     res.status(200).json(partners);
   } catch (error) {
     res.status(500).json({ message: "Error fetching and updating partners", error });
+
   }
 };
 
@@ -66,68 +67,78 @@ export const addPartner = async (req: Request, res: Response): Promise<void> => 
 
 export const updatePartner = async (req: Request, res: Response): Promise<void> => {
   try {
-      const id = req.params.id || req.body.id || req.body._id;
-      const updates = req.body; // Accept any updatable fields
+    const id = req.params.id || req.body.id || req.body._id;
+    const updates = req.body; // Accept any updatable fields
 
-      // Fetch existing partner to retain old values
-      const existing = await pool.query("SELECT * FROM partners WHERE id = $1", [id]);
+    // Fetch existing partner to retain old values
+    const existing = await pool.query("SELECT * FROM partners WHERE id = $1", [id]);
 
-      if (existing.rowCount === 0) {
-          res.status(404).json({ message: "Partner not found" });
-          return;
+    if (existing.rowCount === 0) {
+      res.status(404).json({ message: "Partner not found" });
+      return;
+    }
+
+    // Ensure areas is an array
+    if (updates.areas && !Array.isArray(updates.areas)) {
+      res.status(400).json({ message: "Areas should be an array" });
+      return;
+    }
+
+    // Ensure shift is an object with start & end
+    if (updates.shift) {
+      if (
+        typeof updates.shift !== "object" ||
+        !updates.shift.start ||
+        !updates.shift.end
+      ) {
+        res.status(400).json({ message: "Shift should be an object with start and end time" });
+        return;
       }
+    }
 
-      const currentPartner = existing.rows[0];
+    const setClauses: string[] = [];
+    const values: any[] = [];
+    let paramIndex = 1;
 
-      // Handle areas (ensure it's an array)
-      if (updates.areas && !Array.isArray(updates.areas)) {
-          res.status(400).json({ message: "Areas should be an array" });
-          return;
+    // Process normal fields except shiftstart and shiftend (to avoid duplicate updates)
+    Object.keys(updates).forEach((field) => {
+      if (field !== "shift" && field !== "shiftstart" && field !== "shiftend") {
+        setClauses.push(`${field} = $${paramIndex}`);
+        values.push(updates[field]);
+        paramIndex++;
       }
+    });
 
-      // Handle shift (ensure it's an object with start & end)
-      if (updates.shift && (typeof updates.shift !== "object" || !updates.shift.start || !updates.shift.end)) {
-          res.status(400).json({ message: "Shift should be an object with start and end time" });
-          return;
+    // Handle shift separately (only once)
+    if (updates.shift) {
+      if (!updates.shiftstart && !updates.shiftend) {
+        setClauses.push(`shiftstart = $${paramIndex}`, `shiftend = $${paramIndex + 1}`);
+        values.push(updates.shift.start, updates.shift.end);
+        paramIndex += 2;
       }
+    }
 
-      // Filter out only the fields that need updating
-      const fieldsToUpdate = Object.keys(updates).filter((key) => updates[key] !== undefined);
+    // If no valid fields to update, return an error
+    if (setClauses.length === 0) {
+      res.status(400).json({ message: "No fields to update" });
+      return;
+    }
 
-      if (fieldsToUpdate.length === 0) {
-          res.status(400).json({ message: "No fields to update" });
-          return;
-      }
+    // Append the id to the values array
+    values.push(id);
 
-      const setClauses: string[] = [];
-      const values: any[] = [];
-      let paramIndex = 1;
+    // Construct the final query
+    const query = `UPDATE partners SET ${setClauses.join(", ")} WHERE id = $${values.length} RETURNING *`;
 
-      for (const field of fieldsToUpdate) {
-          if (field === "shift") {
-              // Handle shift separately (assuming database columns: shiftstart & shiftend)
-              setClauses.push(`shiftstart = $${paramIndex}`, `shiftend = $${paramIndex + 1}`);
-              values.push(updates.shift.start, updates.shift.end);
-              paramIndex += 2;
-          } else {
-              setClauses.push(`${field} = $${paramIndex}`);
-              values.push(updates[field]);
-              paramIndex += 1;
-          }
-      }
+    const result = await pool.query(query, values);
 
-      // Append the id to the values array
-      values.push(id);
-
-      const query = `UPDATE partners SET ${setClauses.join(", ")} WHERE id = $${values.length} RETURNING *`;
-
-      const result = await pool.query(query, values);
-
-      res.status(200).json({ message: "Partner updated successfully", partner: result.rows[0] });
+    res.status(200).json({ message: "Partner updated successfully", partner: result.rows[0] });
   } catch (error) {
-      res.status(500).json({ message: "Error updating partner", error });
+    res.status(500).json({ message: "Error updating partner", error });
   }
 };
+
+
 
 
   

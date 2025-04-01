@@ -222,26 +222,27 @@ const Orders = () => {
                     >
                       View
                     </button>
-                    {order.status !== "delivered" && (
-                    <>
-                      {order.status !== "picked" && (
-                        <button
-                          className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md mr-2"
-                          onClick={() => handlePicked(order)}
-                        >
-                          Mark as Picked
-                        </button>
-                      )}
-                      {order.status === "picked" && (
-                        <button
-                          className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-md"
-                          onClick={() => handleDelivered(order)}
-                        >
-                          Mark as Delivered
-                        </button>
-                      )}
-                    </>
-                  )}
+                    {order.status !== "delivered" && order.status !== "pending" && (
+  <>
+    {order.status !== "picked" && (
+      <button
+        className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md mr-2"
+        onClick={() => handlePicked(order)}
+      >
+        Mark as Picked
+      </button>
+    )}
+    {order.status === "picked" && (
+      <button
+        className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-md"
+        onClick={() => handleDelivered(order)}
+      >
+        Mark as Delivered
+      </button>
+    )}
+  </>
+)}
+
                     {order.assignmentError && (
                       <p className="text-red-500 text-sm mt-2">Not Assigned:   {order.assignmentError}</p>
                     )}
