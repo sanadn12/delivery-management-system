@@ -4,7 +4,7 @@ import pool from "../config/db.js";
 import moment from "moment-timezone";
 export const getPartners = async (req: Request, res: Response): Promise<void> => {
   try {
-    const result = await pool.query("SELECT id, name, email, areas, shiftstart, shiftend, phone, rating, status FROM partners");
+    const result = await pool.query("SELECT id, name, email, areas, shiftstart, shiftend, phone,currentload, rating, completedorders, status FROM partners");
 
     const currentTime = moment().tz('Asia/Kolkata');
 

@@ -14,6 +14,8 @@ interface Partner {
   currentLoad: number;
   areas: string[];
   rating: number;
+  completedOrders: number;
+  
 }
 
 const PartnersPage = () => {
@@ -128,6 +130,9 @@ const PartnersPage = () => {
     <p className="text-gray-600"><span className="text-black font-semibold">Areas:</span> {(partner.areas || []).join(", ")}</p>
     <p className="text-gray-600"><span className="text-black font-semibold">Shift Start:</span> {partner.shiftStart}</p>
     <p className="text-gray-600"><span className="text-black font-semibold">Shift End:</span> {partner.shiftEnd}</p>
+    <p className="text-gray-600"><span className="text-black font-semibold">Current Load:</span> {partner.currentLoad}</p>
+    <p className="text-gray-600"><span className="text-black font-semibold">Completed Orders:</span> {partner.completedOrders}</p>
+
     <p className={`text-lg font-medium mt-2 ${partner.status === "active" ? "text-green-500" : "text-red-500"}`}>
                 Status: {partner.status === "active" ? "Active" : "Inactive"}
               </p>
